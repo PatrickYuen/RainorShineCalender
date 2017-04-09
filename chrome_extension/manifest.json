@@ -7,10 +7,15 @@
 		
 		"version": "1.0",
 		
-		"background": {
+		"content_scripts": [
+			{
+			
+				"matches": ["https://calendar.google.com/*"],
+				"js": ["background.js"]
+			
+			}
 		
-			"scripts": ["background.js"]
-		},
+		],
 		
 		"browser_action": {
 		
