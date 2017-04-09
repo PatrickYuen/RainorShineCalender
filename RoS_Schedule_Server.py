@@ -5,7 +5,7 @@ import sys
 import json
 import requests
 
-from flask import Flask, request, redirect, Response
+from flask import Flask, request, redirect, Response, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from twilio.rest import Client
 
@@ -44,6 +44,8 @@ jobs_name = {} #job name : {job id,job time}
 @app.route("/schedule", methods=['POST'])
 def scheduler_weather_report():
 
+	print(request.get_data())
+
 	#Hacky
 	data = get_json(request.get_data())
 	
@@ -53,7 +55,7 @@ def scheduler_weather_report():
 	
 	job_name = data["name"]
     
-	if job_name in jobs_name:
+	if False: #job_name in jobs_name:
 		job = jobs_name[job_name]
 		
 		#Check if scheduled
@@ -74,7 +76,6 @@ def scheduler_weather_report():
 	
 	return "200 ok"
 
-#TODO: Implement
 @app.route("/", methods=['GET', 'POST'])
 def chat_respond():
 	"""Respond to incoming calls with a simple text message."""
@@ -86,6 +87,47 @@ def chat_respond():
 	resp.message(get_weather_city(city))
 	
 	return str(resp)
+	
+@app.route("/weather", methods=['GET'])
+def get_weather():
+	"""Respond to incoming calls with a simple text message."""
+	#data = get_json(request.get_data())
+	
+	#dest_num = data["dest_num"]
+	lat = request.args.get('lat')#"40.7286948"
+	lon = request.args.get('lon')#"-73.9978484"
+	
+	print(lat,lon)
+	
+	url = "http://api.openweathermap.org/data/2.5/weather?lat={0}&lon={1}&appid=3f11122384c719fb2a0a7b77f6af8dba".format(lat,lon)
+	weather = get_json(requests.get(url).content)['weather'][0]['main']
+	
+	return jsonify(res=weather)
+	
+@app.route("/forecast", methods=['GET'])
+def get_weather_city():
+	"""Respond to incoming calls with a simple text message."""
+	#data = get_json(request.get_data())
+	
+	#dest_num = data["dest_num"]
+	city = request.args.get('city').lower()
+	time = int(request.args.get('time'))
+	
+	url = "http://api.openweathermap.org/data/2.5/forecast?q={0}&appid=3f11122384c719fb2a0a7b77f6af8dba".format(city)
+	
+	ans = "Clear"
+	closest_time = 0
+	
+	#Find closest
+	for forecast_info in get_json(requests.get(url).content)['list']:
+		forecast = forecast_info["dt"]
+		print(forecast)
+		if forecast >= time:
+			ans = forecast_info["weather"][0]["main"]
+			closest_time = forecast
+			break;
+	
+	return jsonify(res=ans, closest=time)
 	
 def get_json(byte_info):
 	return json.loads(byte_info.decode("utf-8"))

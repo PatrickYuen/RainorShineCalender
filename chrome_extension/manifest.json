@@ -11,7 +11,7 @@
 			{
 			
 				"matches": ["https://calendar.google.com/*"],
-				"js": ["background.js"]
+				"js": ["jquery.min.js", "background.js"]
 			
 			}
 		
@@ -25,7 +25,8 @@
 		"permissions": [
 			"activeTab", 
 			"tabs", 
-			"https://www.google.com/*"
+			"https://www.google.com/*",
+			"https://4c1803fe.ngrok.io/*"
 			],
 		"web_accessible_resources": ["icon.png"]
 }
